@@ -1,8 +1,9 @@
 import { StackContext, Api, use, Auth } from "@serverless-stack/resources";
 import { StorageStack } from "./StorageStack";
+import * as iam from "aws-cdk-lib/aws-iam";
 
 export function ApiStack({ stack }: StackContext) {
-  const { table } = use(StorageStack);
+  const { table, bucket } = use(StorageStack);
 
   const auth = new Auth(stack, "Auth", {
     login: ["email"],
@@ -57,7 +58,17 @@ export function ApiStack({ stack }: StackContext) {
     },
   });
 
-  auth.attachPermissionsForAuthUsers([api, table]);
+  auth.attachPermissionsForAuthUsers([
+    api,
+    table,
+    new iam.PolicyStatement({
+      actions: ["s3:*"],
+      effect: iam.Effect.ALLOW,
+      resources: [
+        bucket.bucketArn + "/private/${cognito-identity.amazonaws.com:sub}/*",
+      ],
+    }),
+  ]);
 
   stack.addOutputs({
     ApiEndpoint: api.url,
