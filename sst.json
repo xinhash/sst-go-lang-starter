@@ -1,0 +1,5 @@
+{
+  "name": "sst-go-lang-starter",
+  "region": "ap-south-1",
+  "main": "stacks/index.ts"
+}
